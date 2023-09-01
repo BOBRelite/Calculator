@@ -1,116 +1,122 @@
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Calculator {
-    static Scanner scanner = new Scanner(System.in);
-    static int num1, num2;
-    static char op;
-    static int res;
 
-    public static void main (String[] args) {
-        System.out.println("Введите операцию (пример: 1+1 или I+I):");
-        String userInput = scanner.nextLine();
-        char[] under_char = new char[10];
-        for (int i = 0; i < userInput.length(); i++) {
-            under_char[i] = userInput.charAt(i);
-            if (under_char[i] == '+') {
-                op = '+';
-            }
-            if (under_char[i] == '-') {
-                op = '-';
-            }
-            if (under_char[i] == '*') {
-                op = '*';
-            }
-            if (under_char[i] == '/') {
-                op = '/';
-            }
-        }
-        String under_charString = String.valueOf(under_char);
-        String[] blacks = under_charString.split("[+-/*]");
-        String stable00 = blacks[0];
-        String stable01 = blacks[1];
-        String string03 = stable01.trim();
-        num1 = romanToNumber(stable00);
-        num2 = romanToNumber(string03);
-        if (num1 < 0 && num2 < 0) {
-            res = 0;
-        } else {
-            res = calculated(num1, num2, op);
-            String resultRoman = convertNumToRoman(res);
-            System.out.println(stable00 + " " + op + " " + string03 + " = " + resultRoman);
-        }
-        num1 = Integer.parseInt(stable00);
-        num2 = Integer.parseInt(string03);
-        res = calculated(num1, num2, op);
-        System.out.println(num1 + " " + op + " " + num2 + " = " + res);
-    }
+    public static void main(String[] args) {
 
-    private static String convertNumToRoman (int numArabian) {
-        String[] roman = {"O", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
-                "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL",
-                "XLI", "XLII", "XLIII", "XLIV", "XLV", "XLVI", "XLVII", "XLVIII", "XLIX", "L", "LI", "LII", "LIII", "LIV", "LV", "LVI", "LVII", "LVIII", "LIX", "LX",
-                "LXI", "LXII", "LXIII", "LXIV", "LXV", "LXVI", "LXVII", "LXVIII", "LXIX", "LXX",
-                "LXXI", "LXXII", "LXXIII", "LXXIV", "LXXV", "LXXVI", "LXXVII", "LXXVIII", "LXXIX", "LXXX",
-                "LXXXI", "LXXXII", "LXXXIII", "LXXXIV", "LXXXV", "LXXXVI", "LXXXVII", "LXXXVIII", "LXXXIX", "XC",
-                "XCI", "XCII", "XCIII", "XCIV", "XCV", "XCVI", "XCVII", "XCVIII", "XCIX", "C"
-        };
-        final String s = roman[numArabian];
-        return s;
-    }
+        int[] arabicNumbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        String[] romanNumbers = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
 
-    private static int romanToNumber (String roman) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Введите операцию (пример: 1 + 1 или I + I):");
+        String input = scanner.nextLine();
+
         try {
-            if (roman.equals("I")) {
-                return 1;
-            } else if (roman.equals("II")) {
-                return 2;
-            } else if (roman.equals("III")) {
-                return 3;
-            } else if (roman.equals("IV")) {
-                return 4;
-            } else if (roman.equals("V")) {
-                return 5;
-            } else if (roman.equals("VI")) {
-                return 6;
-            } else if (roman.equals("VII")) {
-                return 7;
-            } else if (roman.equals("VIII")) {
-                return 8;
-            } else if (roman.equals("IX")) {
-                return 9;
-            } else if (roman.equals("X")) {
-                return 10;
-            }
-        } catch (InputMismatchException e) {
-            throw new InputMismatchException("Error!");
+            String res = calc(input, arabicNumbers, romanNumbers);
+            System.out.println("Ответ: " + res);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
-        return -1;
+
+        scanner.close();
     }
-    public static int calculated (int num1, int num2, char op) {
-        int ans = 0;
-        switch (op) {
-            case '+':
-                ans = num1 + num2;
+
+    public static String calc(String input, int[] arabicNumbers, String[] romanNumbers) throws Exception {
+
+        String[] tokens = input.split(" ");
+        if (tokens.length != 3) {
+            throw new Exception("Error");
+        }
+
+        boolean isArabic = isArabicNumber(tokens[0]);
+        boolean isRoman = isRomanNumber(tokens[0]);
+
+        if (!isArabic && !isRoman) {
+            throw new Exception("Неверные числа");
+        }
+        if (isArabic && (Integer.parseInt(tokens[0]) < 1 || Integer.parseInt(tokens[0]) > 10 ||
+                Integer.parseInt(tokens[2]) < 1 || Integer.parseInt(tokens[2]) > 10)) {
+            throw new Exception("Неверные числа");
+        }
+        if (isRoman && (!isValidRomanNumber(tokens[0]) || !isValidRomanNumber(tokens[2]))) {
+            throw new Exception("Неверные числа");
+        }
+
+        int num1, num2;
+        if (isRoman) {
+            num1 = romanToArabic(tokens[0], romanNumbers);
+            num2 = romanToArabic(tokens[2], romanNumbers);
+        } else {
+            num1 = Integer.parseInt(tokens[0]);
+            num2 = Integer.parseInt(tokens[2]);
+        }
+
+        int result;
+        switch (tokens[1]) {
+            case "+":
+                result = num1 + num2;
                 break;
-            case '-':
-                ans = num1 - num2;
+            case "-":
+                result = num1 - num2;
                 break;
-            case '*':
-                ans = num1 * num2;
+            case "*":
+                result = num1 * num2;
                 break;
-            case '/':
-                try {
-                    ans = num1 / num2;
-                } catch (ArithmeticException | InputMismatchException e) {
-                    System.out.println("Exception : " + e);
-                    System.out.println("Only integer non-zero parameters allowed");
-                    break;
-                }
+            case "/":
+                result = num1 / num2;
                 break;
             default:
-                throw new IllegalArgumentException("Error!");
+                throw new Exception("Error");
         }
-        return ans;
+
+
+        String finalResult;
+        if (isRoman) {
+            finalResult = arabicToRoman(result, romanNumbers);
+        } else {
+            finalResult = String.valueOf(result);
+        }
+
+        return finalResult;
+    }
+
+    public static boolean isArabicNumber(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public static boolean isRomanNumber(String str) {
+        String[] romanNumbers = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+        for (String romanNumber : romanNumbers) {
+            if (str.equals(romanNumber)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isValidRomanNumber(String str) {
+        String romanNumbersPattern = "^(?:I{1,3}|IV|VI{0,3}|IX|X)$";
+        return str.matches(romanNumbersPattern);
+    }
+
+    public static int romanToArabic(String romanNumber, String[] romanNumbers) {
+        int arabicNumber = 0;
+        for (int i = 0; i < romanNumbers.length; i++) {
+            if (romanNumber.equals(romanNumbers[i])) {
+                arabicNumber = i + 1;
+                break;
+            }
+        }
+        return arabicNumber;
+    }
+
+    public static String arabicToRoman(int arabicNumber, String[] romanNumbers) {
+        return romanNumbers[arabicNumber - 1];
     }
 }
